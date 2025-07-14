@@ -433,7 +433,7 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
     end
 
     context 'when token exchange is successful' do
-      before { allow(auth_code).to receive(:get_token).and_return(access_token) }
+      before { allow(client).to receive(:get_token).and_return(access_token) }
 
       it 'returns access token' do
         expect(strategy.send(:build_access_token)).to eq(access_token)
@@ -441,14 +441,14 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
 
       it 'includes required parameters' do
         strategy.send(:build_access_token)
-        expect(auth_code).to have_received(:get_token).with(
-          'auth_code',
+        expect(client).to have_received(:get_token).with(
           hash_including(
+            headers: { 'Content-Type' => 'application/json' },
             redirect_uri: 'https://example.com/callback',
             client_id: 'client_id',
-            client_secret: 'secret'
-          ),
-          {}
+            client_secret: 'secret',
+            code: 'auth_code'
+          )
         )
       end
     end
@@ -457,7 +457,7 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
       let(:oauth_error) { OAuth2::Error.new(instance_double(OAuth2::Response, status: 400)) }
 
       before do
-        allow(auth_code).to receive(:get_token).and_raise(oauth_error)
+        allow(client).to receive(:get_token).and_raise(oauth_error)
         allow(strategy).to receive(:log)
         allow(strategy).to receive(:fail!)
       end
@@ -472,7 +472,7 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
     context 'when timeout occurs' do
       context 'with Timeout::Error' do
         before do
-          allow(auth_code).to receive(:get_token).and_raise(Timeout::Error)
+          allow(client).to receive(:get_token).and_raise(Timeout::Error)
           allow(strategy).to receive(:log)
           allow(strategy).to receive(:fail!)
         end
@@ -486,7 +486,7 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
 
       context 'with Errno::ETIMEDOUT' do
         before do
-          allow(auth_code).to receive(:get_token).and_raise(Errno::ETIMEDOUT)
+          allow(client).to receive(:get_token).and_raise(Errno::ETIMEDOUT)
           allow(strategy).to receive(:log)
           allow(strategy).to receive(:fail!)
         end
