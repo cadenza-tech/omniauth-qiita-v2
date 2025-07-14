@@ -110,19 +110,31 @@ module OmniAuth
       end
 
       def build_access_token
-        verifier = request.params['code']
-        token_params = {
-          redirect_uri: callback_url,
-          client_id: options.client_id,
-          client_secret: options.client_secret
-        }.merge(token_params_from_options)
-        client.auth_code.get_token(verifier, token_params, deep_symbolize(options.auth_token_params))
+        client.get_token(access_token_params)
       rescue ::OAuth2::Error => e
         log :error, "Failed to build access token: #{e.message}"
         fail!(:invalid_credentials, e)
       rescue ::Timeout::Error, ::Errno::ETIMEDOUT => e
         log :error, "Timeout during token exchange: #{e.message}"
         fail!(:timeout, e)
+      end
+
+      def access_token_params
+        base_params
+          .merge(token_params_from_options)
+          .merge(deep_symbolize(options.auth_token_params))
+      end
+
+      def base_params
+        {
+          headers: {
+            'Content-Type' => 'application/json'
+          },
+          redirect_uri: callback_url,
+          client_id: options.client_id,
+          client_secret: options.client_secret,
+          code: request.params['code']
+        }
       end
 
       def token_params_from_options
