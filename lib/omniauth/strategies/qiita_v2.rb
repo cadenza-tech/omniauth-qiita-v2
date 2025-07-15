@@ -28,10 +28,12 @@ module OmniAuth
         prune!({
           name: raw_info['name'],
           nickname: raw_info['id'],
+          permanent_id: raw_info['permanent_id'],
           email: nil, # Qiita API v2 does not provide email
           description: raw_info['description'],
           image: raw_info['profile_image_url'],
           location: raw_info['location'],
+          organization: raw_info['organization'],
           followees_count: raw_info['followees_count'],
           followers_count: raw_info['followers_count'],
           items_count: raw_info['items_count'],
