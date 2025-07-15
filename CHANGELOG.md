@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2025-07-15
+
+- New: Add `permanent_id` and `organization` to auth hash
+- Test: Update test
+- Other: Update README.md
+
 ## [1.0.0] - 2025-07-15
 
 - New: Use pessimistic versioning and add oauth2 dependency
