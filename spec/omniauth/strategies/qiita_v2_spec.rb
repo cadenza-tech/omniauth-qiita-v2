@@ -83,9 +83,11 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
       {
         'id' => 'qiita_user_123',
         'name' => 'Test User',
+        'permanent_id' => 1234567890,
         'profile_image_url' => 'http://example.com/avatar.jpg',
         'description' => 'Test description',
         'location' => 'Tokyo',
+        'organization' => 'Test Organization',
         'followees_count' => 50,
         'followers_count' => 100,
         'items_count' => 30,
@@ -104,9 +106,11 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
       expect(info).to include(
         name: 'Test User',
         nickname: 'qiita_user_123',
+        permanent_id: 1234567890,
         image: 'http://example.com/avatar.jpg',
         description: 'Test description',
         location: 'Tokyo',
+        organization: 'Test Organization',
         followees_count: 50,
         followers_count: 100,
         items_count: 30,

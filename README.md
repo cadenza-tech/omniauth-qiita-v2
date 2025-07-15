@@ -92,9 +92,11 @@ After successful authentication, the auth hash will be available in `request.env
   info: {
     name: 'John Doe',
     nickname: 'example_qiita_user_john_doe',
+    permanent_id: 1234567890,
     image: 'https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/...',
     description: 'Software Developer',
     location: 'Tokyo, Japan',
+    organization: 'Example Inc.',
     followees_count: 50,
     followers_count: 100,
     items_count: 30,
