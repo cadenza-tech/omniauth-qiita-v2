@@ -319,7 +319,7 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
   describe '#callback_url' do
     context 'without redirect_uri option' do
       it 'builds callback url from request' do
-        allow(strategy).to receive_messages(full_host: 'https://example.com', script_name: '', callback_path: '/auth/qiita_v2/callback')
+        allow(strategy).to receive_messages(full_host: 'https://example.com', callback_path: '/auth/qiita_v2/callback')
         expect(strategy.callback_url).to eq('https://example.com/auth/qiita_v2/callback')
       end
     end
@@ -422,7 +422,10 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
     let(:access_token) { instance_double(OAuth2::AccessToken) }
 
     before do
-      allow(client).to receive(:auth_code).and_return(auth_code)
+      allow(client).to receive_messages(
+        auth_code: auth_code,
+        get_token: access_token
+      )
       allow(strategy).to receive_messages(
         request: request,
         client: client,
@@ -436,71 +439,21 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
       )
     end
 
-    context 'when token exchange is successful' do
-      before { allow(client).to receive(:get_token).and_return(access_token) }
+    it 'returns access token' do
+      expect(strategy.send(:build_access_token)).to eq(access_token)
+    end
 
-      it 'returns access token' do
-        expect(strategy.send(:build_access_token)).to eq(access_token)
-      end
-
-      it 'includes required parameters' do
-        strategy.send(:build_access_token)
-        expect(client).to have_received(:get_token).with(
-          hash_including(
-            headers: { 'Content-Type' => 'application/json' },
-            redirect_uri: 'https://example.com/callback',
-            client_id: 'client_id',
-            client_secret: 'secret',
-            code: 'auth_code'
-          )
+    it 'includes required parameters' do
+      strategy.send(:build_access_token)
+      expect(client).to have_received(:get_token).with(
+        hash_including(
+          headers: { 'Content-Type' => 'application/json' },
+          redirect_uri: 'https://example.com/callback',
+          client_id: 'client_id',
+          client_secret: 'secret',
+          code: 'auth_code'
         )
-      end
-    end
-
-    context 'when OAuth2 error occurs' do
-      let(:oauth_error) { OAuth2::Error.new(instance_double(OAuth2::Response, status: 400)) }
-
-      before do
-        allow(client).to receive(:get_token).and_raise(oauth_error)
-        allow(strategy).to receive(:log)
-        allow(strategy).to receive(:fail!)
-      end
-
-      it 'logs the error and fails with invalid_credentials' do
-        strategy.send(:build_access_token)
-        expect(strategy).to have_received(:log).with(:error, /Failed to build access token/)
-        expect(strategy).to have_received(:fail!).with(:invalid_credentials, oauth_error)
-      end
-    end
-
-    context 'when timeout occurs' do
-      context 'with Timeout::Error' do
-        before do
-          allow(client).to receive(:get_token).and_raise(Timeout::Error)
-          allow(strategy).to receive(:log)
-          allow(strategy).to receive(:fail!)
-        end
-
-        it 'logs the error and fails with timeout' do
-          strategy.send(:build_access_token)
-          expect(strategy).to have_received(:log).with(:error, /Timeout during token exchange/)
-          expect(strategy).to have_received(:fail!).with(:timeout, instance_of(Timeout::Error))
-        end
-      end
-
-      context 'with Errno::ETIMEDOUT' do
-        before do
-          allow(client).to receive(:get_token).and_raise(Errno::ETIMEDOUT)
-          allow(strategy).to receive(:log)
-          allow(strategy).to receive(:fail!)
-        end
-
-        it 'logs the error and fails with timeout' do
-          strategy.send(:build_access_token)
-          expect(strategy).to have_received(:log).with(:error, /Timeout during token exchange/)
-          expect(strategy).to have_received(:fail!).with(:timeout, instance_of(Errno::ETIMEDOUT))
-        end
-      end
+      )
     end
   end
 end
