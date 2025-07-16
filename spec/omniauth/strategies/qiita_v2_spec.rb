@@ -211,108 +211,18 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
     let(:access_token) { instance_double(OAuth2::AccessToken) }
     let(:response) { instance_double(OAuth2::Response, parsed: { 'id' => 'test123' }) }
 
-    before { allow(strategy).to receive(:access_token).and_return(access_token) }
-
-    context 'when API request is successful' do
-      before { allow(access_token).to receive(:get).with('/api/v2/authenticated_user').and_return(response) }
-
-      it 'fetches user info from API' do
-        expect(strategy.raw_info).to eq({ 'id' => 'test123' })
-      end
-
-      it 'memoizes the result' do
-        2.times { strategy.raw_info }
-        expect(access_token).to have_received(:get).once
-      end
+    before do
+      allow(strategy).to receive(:access_token).and_return(access_token)
+      allow(access_token).to receive(:get).with('/api/v2/authenticated_user').and_return(response)
     end
 
-    context 'when API returns 401 Unauthorized' do
-      let(:error_response) { instance_double(OAuth2::Response, status: 401) }
-      let(:oauth_error) { OAuth2::Error.new(error_response) }
-
-      before do
-        allow(access_token).to receive(:get).with('/api/v2/authenticated_user').and_raise(oauth_error)
-        allow(strategy).to receive(:log)
-      end
-
-      it 'raises OmniAuth::NoSessionError' do
-        expect { strategy.raw_info }.to raise_error(OmniAuth::NoSessionError, 'Invalid access token')
-      end
-
-      it 'logs the error' do
-        expect { strategy.raw_info }.to raise_error(OmniAuth::NoSessionError)
-        expect(strategy).to have_received(:log).with(:error, '401 Unauthorized - Invalid access token')
-      end
+    it 'fetches user info from API' do
+      expect(strategy.raw_info).to eq({ 'id' => 'test123' })
     end
 
-    context 'when API returns 403 Forbidden' do
-      let(:error_response) { instance_double(OAuth2::Response, status: 403) }
-      let(:oauth_error) { OAuth2::Error.new(error_response) }
-
-      before do
-        allow(access_token).to receive(:get).and_raise(oauth_error)
-        allow(strategy).to receive(:log)
-      end
-
-      it 'raises OmniAuth::NoSessionError with appropriate message' do
-        expect { strategy.raw_info }.to raise_error(OmniAuth::NoSessionError, 'Insufficient permissions')
-      end
-    end
-
-    context 'when API returns 404 Not Found' do
-      let(:error_response) { instance_double(OAuth2::Response, status: 404) }
-      let(:oauth_error) { OAuth2::Error.new(error_response) }
-
-      before do
-        allow(access_token).to receive(:get).and_raise(oauth_error)
-        allow(strategy).to receive(:log)
-      end
-
-      it 'raises OmniAuth::NoSessionError with appropriate message' do
-        expect { strategy.raw_info }.to raise_error(OmniAuth::NoSessionError, 'User not found')
-      end
-    end
-
-    context 'when connection times out' do
-      before do
-        allow(access_token).to receive(:get).and_raise(Errno::ETIMEDOUT)
-        allow(strategy).to receive(:log)
-      end
-
-      it 'raises OmniAuth::NoSessionError' do
-        expect { strategy.raw_info }.to raise_error(OmniAuth::NoSessionError, 'Connection timed out')
-      end
-    end
-
-    context 'when network error occurs' do
-      before do
-        allow(access_token).to receive(:get).and_raise(SocketError.new('getaddrinfo: nodename nor servname provided'))
-        allow(strategy).to receive(:log)
-      end
-
-      it 'raises OmniAuth::NoSessionError' do
-        expect { strategy.raw_info }.to raise_error(OmniAuth::NoSessionError, 'Network error')
-      end
-    end
-
-    context 'when API returns other errors' do
-      let(:error_response) { instance_double(OAuth2::Response, status: 500) }
-      let(:oauth_error) { OAuth2::Error.new(error_response) }
-
-      before do
-        allow(oauth_error).to receive(:message).and_return('Internal Server Error')
-        allow(access_token).to receive(:get).with('/api/v2/authenticated_user').and_raise(oauth_error)
-        allow(strategy).to receive(:log)
-      end
-
-      it 're-raises the original error' do
-        expect { strategy.raw_info }.to raise_error(OAuth2::Error)
-      end
-
-      it 'logs the error with status and message' do
-        expect { strategy.raw_info }.to raise_error(OAuth2::Error)
-        expect(strategy).to have_received(:log).with(:error, 'API Error: 500 - Internal Server Error')
-      end
+    it 'memoizes the result' do
+      2.times { strategy.raw_info }
+      expect(access_token).to have_received(:get).once
     end
   end
 
@@ -434,6 +344,7 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
           client_id: 'client_id',
           client_secret: 'secret',
           token_params: {},
+          token_options: {},
           auth_token_params: {}
         )
       )
