@@ -57,7 +57,7 @@ Add the OmniAuth configuration to your Devise model:
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :omniauthable, omniauth_providers: %i[qiita_v2]
+         :omniauthable, omniauth_providers: [:qiita_v2]
 end
 ```
 
