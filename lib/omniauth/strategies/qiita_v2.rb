@@ -61,31 +61,8 @@ module OmniAuth
         hash
       end
 
-      def raw_info # rubocop:disable Metrics/AbcSize
-        @raw_info ||= begin
-          access_token.get(USER_INFO_URL).parsed || {}
-        rescue ::OAuth2::Error => e
-          case e.response.status
-          when 401
-            log :error, '401 Unauthorized - Invalid access token'
-            raise ::OmniAuth::NoSessionError.new('Invalid access token')
-          when 403
-            log :error, '403 Forbidden - Insufficient permissions'
-            raise ::OmniAuth::NoSessionError.new('Insufficient permissions')
-          when 404
-            log :error, '404 Not Found - User not found'
-            raise ::OmniAuth::NoSessionError.new('User not found')
-          else
-            log :error, "API Error: #{e.response.status} - #{e.message}"
-            raise e
-          end
-        rescue ::Errno::ETIMEDOUT
-          log :error, 'Connection timed out'
-          raise ::OmniAuth::NoSessionError.new('Connection timed out')
-        rescue ::SocketError => e
-          log :error, "Network error: #{e.message}"
-          raise ::OmniAuth::NoSessionError.new('Network error')
-        end
+      def raw_info
+        @raw_info ||= access_token.get(USER_INFO_URL).parsed
       end
 
       def callback_url
@@ -105,7 +82,7 @@ module OmniAuth
       protected
 
       def build_access_token
-        client.get_token(base_params.merge(token_params_from_options).merge(deep_symbolize(options.auth_token_params)))
+        client.get_token(base_params.merge(token_params.to_hash(symbolize_keys: true)).merge(deep_symbolize(options.auth_token_params)))
       end
 
       private
@@ -127,17 +104,6 @@ module OmniAuth
           redirect_uri: callback_url,
           code: request.params['code']
         }
-      end
-
-      def token_params_from_options
-        return {} unless options.token_params
-
-        if options.token_params.is_a?(Hash)
-          params = options.token_params
-        else
-          params = options.token_params.to_hash
-        end
-        params.transform_keys(&:to_sym)
       end
     end
   end
