@@ -89,7 +89,7 @@ module OmniAuth
       end
 
       def callback_url
-        options[:redirect_uri] || (full_host + script_name + callback_path)
+        options[:redirect_uri] || (full_host + callback_path)
       end
 
       def authorize_params
@@ -102,6 +102,12 @@ module OmniAuth
         end
       end
 
+      protected
+
+      def build_access_token
+        client.get_token(base_params.merge(token_params_from_options).merge(deep_symbolize(options.auth_token_params)))
+      end
+
       private
 
       def prune!(hash)
@@ -111,30 +117,14 @@ module OmniAuth
         end
       end
 
-      def build_access_token
-        client.get_token(access_token_params)
-      rescue ::OAuth2::Error => e
-        log :error, "Failed to build access token: #{e.message}"
-        fail!(:invalid_credentials, e)
-      rescue ::Timeout::Error, ::Errno::ETIMEDOUT => e
-        log :error, "Timeout during token exchange: #{e.message}"
-        fail!(:timeout, e)
-      end
-
-      def access_token_params
-        base_params
-          .merge(token_params_from_options)
-          .merge(deep_symbolize(options.auth_token_params))
-      end
-
       def base_params
         {
           headers: {
             'Content-Type' => 'application/json'
           },
-          redirect_uri: callback_url,
           client_id: options.client_id,
           client_secret: options.client_secret,
+          redirect_uri: callback_url,
           code: request.params['code']
         }
       end
