@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'oauth2'
 gem 'rack-test'
 gem 'rake'
 gem 'rspec'
