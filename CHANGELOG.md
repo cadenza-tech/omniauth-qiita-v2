@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0] - 2025-07-17
+
+- New: Remove oauth2 dependency
+- Refactor: Refactoring
+- Test: Update test
+
 ## [1.2.0] - 2025-07-16
 
 - Refactor: Refactoring
