@@ -88,9 +88,9 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
         'description' => 'Test description',
         'location' => 'Tokyo',
         'organization' => 'Test Organization',
-        'followees_count' => 50,
-        'followers_count' => 100,
-        'items_count' => 30,
+        'followees_count' => 100,
+        'followers_count' => 200,
+        'items_count' => 300,
         'website_url' => 'https://example.com',
         'twitter_screen_name' => 'twitter123',
         'facebook_id' => 'facebook123',
@@ -106,23 +106,42 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
       expect(info).to include(
         name: 'Test User',
         nickname: 'qiita_user_123',
-        permanent_id: 1234567890,
         image: 'http://example.com/avatar.jpg',
         description: 'Test description',
         location: 'Tokyo',
-        organization: 'Test Organization',
-        followees_count: 50,
-        followers_count: 100,
-        items_count: 30,
         urls: {
           website: 'https://example.com',
+          x: 'https://x.com/twitter123',
+          twitter: 'https://twitter.com/twitter123',
           facebook: 'https://facebook.com/facebook123',
           linkedin: 'https://www.linkedin.com/in/linkedin123',
-          twitter: 'https://x.com/twitter123',
           github: 'https://github.com/github123'
         }
       )
       expect(info).not_to have_key(:email)
+    end
+
+    it 'returns correct extra hash' do
+      extra = strategy.extra
+      expect(extra).to include(
+        raw_info: {
+          'id' => 'qiita_user_123',
+          'name' => 'Test User',
+          'permanent_id' => 1234567890,
+          'profile_image_url' => 'http://example.com/avatar.jpg',
+          'description' => 'Test description',
+          'location' => 'Tokyo',
+          'organization' => 'Test Organization',
+          'followees_count' => 100,
+          'followers_count' => 200,
+          'items_count' => 300,
+          'website_url' => 'https://example.com',
+          'twitter_screen_name' => 'twitter123',
+          'facebook_id' => 'facebook123',
+          'linkedin_id' => 'linkedin123',
+          'github_login_name' => 'github123'
+        }
+      )
     end
 
     it 'prunes empty values' do
@@ -141,10 +160,10 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
           'followers_count' => 0,
           'items_count' => 0
         })
-        info = strategy.info
-        expect(info[:followees_count]).to eq(0)
-        expect(info[:followers_count]).to eq(0)
-        expect(info[:items_count]).to eq(0)
+        extra = strategy.extra
+        expect(extra[:raw_info]['followees_count']).to eq(0)
+        expect(extra[:raw_info]['followers_count']).to eq(0)
+        expect(extra[:raw_info]['items_count']).to eq(0)
       end
 
       it 'prunes nil counts' do
