@@ -88,24 +88,20 @@ After successful authentication, the auth hash will be available in `request.env
 ```ruby
 {
   provider: 'qiita_v2',
-  uid: 'example_qiita_user_john_doe',
+  uid: 'qiita',
   info: {
-    name: 'John Doe',
-    nickname: 'example_qiita_user_john_doe',
-    permanent_id: 1234567890,
-    image: 'https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/...',
-    description: 'Software Developer',
+    name: 'Qiita キータ',
+    nickname: 'qiita',
+    image: 'https://s3-ap-northeast-1.amazonaws.com/qiita-image-store/0/88/ccf90b557a406157dbb9d2d7e543dae384dbb561/large.png?1575443439',
+    description: 'Hello, world.',
     location: 'Tokyo, Japan',
-    organization: 'Example Inc.',
-    followees_count: 50,
-    followers_count: 100,
-    items_count: 30,
     urls: {
-      website: 'https://example.com',
-      twitter: 'https://x.com/...',
-      facebook: 'https://facebook.com/...',
-      linkedin: 'https://www.linkedin.com/in/...',
-      github: 'https://github.com/...'
+      website: 'https://qiita.com',
+      x: 'https://x.com/qiita',
+      twitter: 'https://twitter.com/qiita',
+      facebook: 'https://facebook.com/qiita',
+      linkedin: 'https://www.linkedin.com/in/qiita',
+      github: 'https://github.com/qiitan'
     }
   },
   credentials: {
@@ -114,7 +110,24 @@ After successful authentication, the auth hash will be available in `request.env
   },
   extra: {
     raw_info: {
-      # Complete user information from Qiita API
+      'description' => 'Hello, world.',
+      'facebook_id' => 'qiita',
+      'followees_count' => 100,
+      'followers_count' => 200,
+      'github_login_name' => 'qiitan',
+      'id' => 'qiita',
+      'items_count' => 300,
+      'linkedin_id' => 'qiita',
+      'location' => 'Tokyo, Japan',
+      'name' => 'Qiita キータ',
+      'organization' => 'Qiita Inc.',
+      'permanent_id' => 1,
+      'profile_image_url' => 'https://s3-ap-northeast-1.amazonaws.com/qiita-image-store/0/88/ccf90b557a406157dbb9d2d7e543dae384dbb561/large.png?1575443439',
+      'team_only' => false,
+      'twitter_screen_name' => 'qiita',
+      'website_url' => 'https://qiita.com',
+      'image_monthly_upload_limit' => 1048576,
+      'image_monthly_upload_remaining' => 524288
     }
   }
 }
