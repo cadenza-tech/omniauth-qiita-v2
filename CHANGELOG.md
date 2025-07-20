@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0] - 2025-07-20
+
+- New: Update auth hash
+- Test: Update test
+- Other: Update README.md
+
 ## [1.3.0] - 2025-07-17
 
 - New: Remove oauth2 dependency
