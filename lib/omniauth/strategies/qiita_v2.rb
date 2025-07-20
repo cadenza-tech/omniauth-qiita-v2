@@ -28,18 +28,14 @@ module OmniAuth
         prune!({
           name: raw_info['name'],
           nickname: raw_info['id'],
-          permanent_id: raw_info['permanent_id'],
           email: nil, # Qiita API v2 does not provide email
           description: raw_info['description'],
           image: raw_info['profile_image_url'],
           location: raw_info['location'],
-          organization: raw_info['organization'],
-          followees_count: raw_info['followees_count'],
-          followers_count: raw_info['followers_count'],
-          items_count: raw_info['items_count'],
           urls: {
             website: raw_info['website_url'],
-            twitter: raw_info['twitter_screen_name'] ? "https://x.com/#{raw_info['twitter_screen_name']}" : nil,
+            x: raw_info['twitter_screen_name'] ? "https://x.com/#{raw_info['twitter_screen_name']}" : nil,
+            twitter: raw_info['twitter_screen_name'] ? "https://twitter.com/#{raw_info['twitter_screen_name']}" : nil,
             facebook: raw_info['facebook_id'] ? "https://facebook.com/#{raw_info['facebook_id']}" : nil,
             linkedin: raw_info['linkedin_id'] ? "https://www.linkedin.com/in/#{raw_info['linkedin_id']}" : nil,
             github: raw_info['github_login_name'] ? "https://github.com/#{raw_info['github_login_name']}" : nil
