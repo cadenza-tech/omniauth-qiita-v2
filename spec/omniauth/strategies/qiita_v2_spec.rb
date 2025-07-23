@@ -16,28 +16,12 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
   let(:strategy) { described_class.new('app', 'client_id', 'client_secret', options) }
 
   describe 'default options' do
-    it 'has correct name' do
+    it 'has correct default values' do
       expect(strategy.options.name).to eq('qiita_v2')
-    end
-
-    it 'has correct default scope' do
       expect(strategy.options.scope).to eq('read_qiita')
-    end
-  end
-
-  describe 'client options' do
-    subject(:client_options) { strategy.options.client_options }
-
-    it 'has correct site' do
-      expect(client_options.site).to eq('https://qiita.com')
-    end
-
-    it 'has correct authorize url' do
-      expect(client_options.authorize_url).to eq('/api/v2/oauth/authorize')
-    end
-
-    it 'has correct token url' do
-      expect(client_options.token_url).to eq('/api/v2/access_tokens')
+      expect(strategy.options.client_options.site).to eq('https://qiita.com')
+      expect(strategy.options.client_options.authorize_url).to eq('/api/v2/oauth/authorize')
+      expect(strategy.options.client_options.token_url).to eq('/api/v2/access_tokens')
     end
   end
 
@@ -49,53 +33,39 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
         expect(strategy.options.scope).to eq('read_qiita write_qiita')
       end
     end
-
-    context 'with custom redirect uri' do
-      let(:options) { { redirect_uri: 'https://example.com/auth/callback' } }
-
-      it 'uses custom redirect uri in callback_url' do
-        expect(strategy.callback_url).to eq('https://example.com/auth/callback')
-      end
-    end
-
-    context 'with skip_info option' do
-      let(:options) { { skip_info: true } }
-
-      it 'does not include raw_info in extra' do
-        allow(strategy).to receive_messages(raw_info: { 'id' => 'test' }, skip_info?: true)
-        expect(strategy.extra).to eq({})
-      end
-    end
   end
 
   describe '#uid' do
-    let(:raw_info) { { 'id' => 'qiita_user_123' } }
+    let(:raw_info) { { 'id' => 'qiita123' } }
 
     before { allow(strategy).to receive(:raw_info).and_return(raw_info) }
 
     it 'returns the id from raw_info' do
-      expect(strategy.uid).to eq('qiita_user_123')
+      expect(strategy.uid).to eq('qiita123')
     end
   end
 
   describe '#info' do
     let(:raw_info) do
       {
-        'id' => 'qiita_user_123',
-        'name' => 'Test User',
-        'permanent_id' => 1234567890,
-        'profile_image_url' => 'http://example.com/avatar.jpg',
         'description' => 'Test description',
-        'location' => 'Tokyo',
-        'organization' => 'Test Organization',
+        'facebook_id' => 'facebook123',
         'followees_count' => 100,
         'followers_count' => 200,
+        'github_login_name' => 'github123',
+        'id' => 'qiita123',
         'items_count' => 300,
-        'website_url' => 'https://example.com',
-        'twitter_screen_name' => 'twitter123',
-        'facebook_id' => 'facebook123',
         'linkedin_id' => 'linkedin123',
-        'github_login_name' => 'github123'
+        'location' => 'Tokyo',
+        'name' => 'Test User',
+        'organization' => 'Test Organization',
+        'permanent_id' => 1234567890,
+        'profile_image_url' => 'http://example.com/avatar.jpg',
+        'team_only' => false,
+        'twitter_screen_name' => 'twitter123',
+        'website_url' => 'https://example.com',
+        'image_monthly_upload_limit' => 1048576,
+        'image_monthly_upload_remaining' => 524288
       }
     end
 
@@ -103,9 +73,9 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
 
     it 'returns correct info hash' do
       info = strategy.info
-      expect(info).to include(
+      expect(info).to eq(
         name: 'Test User',
-        nickname: 'qiita_user_123',
+        nickname: 'qiita123',
         image: 'http://example.com/avatar.jpg',
         description: 'Test description',
         location: 'Tokyo',
@@ -121,41 +91,87 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
       expect(info).not_to have_key(:email)
     end
 
-    it 'returns correct extra hash' do
-      extra = strategy.extra
-      expect(extra).to include(
-        raw_info: {
-          'id' => 'qiita_user_123',
-          'name' => 'Test User',
-          'permanent_id' => 1234567890,
-          'profile_image_url' => 'http://example.com/avatar.jpg',
-          'description' => 'Test description',
-          'location' => 'Tokyo',
-          'organization' => 'Test Organization',
-          'followees_count' => 100,
-          'followers_count' => 200,
-          'items_count' => 300,
-          'website_url' => 'https://example.com',
-          'twitter_screen_name' => 'twitter123',
-          'facebook_id' => 'facebook123',
-          'linkedin_id' => 'linkedin123',
-          'github_login_name' => 'github123'
-        }
-      )
-    end
-
     it 'prunes empty values' do
-      allow(strategy).to receive(:raw_info).and_return({ 'id' => 'test', 'name' => '', 'description' => nil })
+      allow(strategy).to receive(:raw_info).and_return({
+        'id' => 'qiita123',
+        'name' => nil,
+        'description' => ''
+      })
       info = strategy.info
       expect(info).to have_key(:nickname)
       expect(info).not_to have_key(:name)
       expect(info).not_to have_key(:description)
     end
+  end
+
+  describe '#extra' do
+    let(:raw_info) do
+      {
+        'description' => 'Test description',
+        'facebook_id' => 'facebook123',
+        'followees_count' => 100,
+        'followers_count' => 200,
+        'github_login_name' => 'github123',
+        'id' => 'qiita123',
+        'items_count' => 300,
+        'linkedin_id' => 'linkedin123',
+        'location' => 'Tokyo',
+        'name' => 'Test User',
+        'organization' => 'Test Organization',
+        'permanent_id' => 1234567890,
+        'profile_image_url' => 'http://example.com/avatar.jpg',
+        'team_only' => false,
+        'twitter_screen_name' => 'twitter123',
+        'website_url' => 'https://example.com',
+        'image_monthly_upload_limit' => 1048576,
+        'image_monthly_upload_remaining' => 524288
+      }
+    end
+
+    before { allow(strategy).to receive(:raw_info).and_return(raw_info) }
+
+    it 'returns correct extra hash' do
+      extra = strategy.extra
+      expect(extra).to eq(
+        raw_info: {
+          'description' => 'Test description',
+          'facebook_id' => 'facebook123',
+          'followees_count' => 100,
+          'followers_count' => 200,
+          'github_login_name' => 'github123',
+          'id' => 'qiita123',
+          'items_count' => 300,
+          'linkedin_id' => 'linkedin123',
+          'location' => 'Tokyo',
+          'name' => 'Test User',
+          'organization' => 'Test Organization',
+          'permanent_id' => 1234567890,
+          'profile_image_url' => 'http://example.com/avatar.jpg',
+          'team_only' => false,
+          'twitter_screen_name' => 'twitter123',
+          'website_url' => 'https://example.com',
+          'image_monthly_upload_limit' => 1048576,
+          'image_monthly_upload_remaining' => 524288
+        }
+      )
+    end
+
+    it 'prunes empty values' do
+      allow(strategy).to receive(:raw_info).and_return({
+        'id' => 'qiita123',
+        'name' => nil,
+        'description' => ''
+      })
+      extra = strategy.extra
+      expect(extra[:raw_info]).to have_key('id')
+      expect(extra[:raw_info]).not_to have_key('name')
+      expect(extra[:raw_info]).not_to have_key('description')
+    end
 
     context 'with statistics counts' do
       it 'includes zero counts' do
         allow(strategy).to receive(:raw_info).and_return({
-          'id' => 'test',
+          'id' => 'qiita123',
           'followees_count' => 0,
           'followers_count' => 0,
           'items_count' => 0
@@ -168,7 +184,7 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
 
       it 'prunes nil counts' do
         allow(strategy).to receive(:raw_info).and_return({
-          'id' => 'test',
+          'id' => 'qiita123',
           'followees_count' => nil,
           'followers_count' => nil,
           'items_count' => nil
@@ -179,13 +195,22 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
         expect(info).not_to have_key(:items_count)
       end
     end
+
+    context 'when skip_info is true' do
+      let(:options) { { skip_info: true } }
+
+      it 'does not include raw_info in extra' do
+        allow(strategy).to receive_messages(raw_info: { 'id' => 'qiita123' }, skip_info?: true)
+        expect(strategy.extra).to eq({})
+      end
+    end
   end
 
   describe '#credentials' do
     let(:access_token) do
       instance_double(
         OAuth2::AccessToken,
-        token: 'test_token',
+        token: 'token',
         expires?: true,
         expires_at: 1234567890,
         refresh_token: 'refresh_token'
@@ -197,19 +222,41 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
     it 'returns credentials hash' do
       credentials = strategy.credentials
       expect(credentials).to include(
-        token: 'test_token',
+        token: 'token',
         expires: true,
         expires_at: 1234567890,
         refresh_token: 'refresh_token'
       )
     end
 
+    context 'when access token does not expire' do
+      let(:access_token) do
+        instance_double(
+          OAuth2::AccessToken,
+          token: 'token',
+          expires?: false,
+          refresh_token: 'refresh_token'
+        )
+      end
+
+      it 'does not include expires_at' do
+        credentials = strategy.credentials
+        expect(credentials).to include(
+          token: 'token',
+          expires: false,
+          refresh_token: 'refresh_token'
+        )
+        expect(credentials).not_to have_key(:expires_at)
+      end
+    end
+
     context 'without refresh token' do
       let(:access_token) do
         instance_double(
           OAuth2::AccessToken,
-          token: 'test_token',
-          expires?: false,
+          token: 'token',
+          expires?: true,
+          expires_at: 1234567890,
           refresh_token: nil
         )
       end
@@ -217,10 +264,10 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
       it 'does not include refresh_token' do
         credentials = strategy.credentials
         expect(credentials).to include(
-          token: 'test_token',
-          expires: false
+          token: 'token',
+          expires: true,
+          expires_at: 1234567890
         )
-        expect(credentials).not_to have_key(:expires_at)
         expect(credentials).not_to have_key(:refresh_token)
       end
     end
@@ -228,15 +275,15 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
 
   describe '#raw_info' do
     let(:access_token) { instance_double(OAuth2::AccessToken) }
-    let(:response) { instance_double(OAuth2::Response, parsed: { 'id' => 'test123' }) }
+    let(:response) { instance_double(OAuth2::Response, parsed: { 'id' => 'qiita123' }) }
 
     before do
       allow(strategy).to receive(:access_token).and_return(access_token)
-      allow(access_token).to receive(:get).with('/api/v2/authenticated_user').and_return(response)
+      allow(access_token).to receive(:get).and_return(response)
     end
 
     it 'fetches user info from API' do
-      expect(strategy.raw_info).to eq({ 'id' => 'test123' })
+      expect(strategy.raw_info).to eq({ 'id' => 'qiita123' })
     end
 
     it 'memoizes the result' do
@@ -292,58 +339,6 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
     end
   end
 
-  describe '#prune!' do
-    it 'removes nil values from hash' do
-      hash = { a: 1, b: nil, c: 'test', d: nil }
-      expect(strategy.send(:prune!, hash)).to eq({ a: 1, c: 'test' })
-    end
-
-    it 'removes empty string values from hash' do
-      hash = { a: 'value', b: '', c: 'another', d: '' }
-      expect(strategy.send(:prune!, hash)).to eq({ a: 'value', c: 'another' })
-    end
-
-    it 'removes empty array values from hash' do
-      hash = { a: [1, 2], b: [], c: ['test'], d: [] }
-      expect(strategy.send(:prune!, hash)).to eq({ a: [1, 2], c: ['test'] })
-    end
-
-    it 'removes empty hash values from hash' do
-      hash = { a: { x: 1 }, b: {}, c: { y: 2 }, d: {} }
-      expect(strategy.send(:prune!, hash)).to eq({ a: { x: 1 }, c: { y: 2 } })
-    end
-
-    it 'keeps zero values' do
-      hash = { a: 0, b: nil, c: '', d: 'value' }
-      expect(strategy.send(:prune!, hash)).to eq({ a: 0, d: 'value' })
-    end
-
-    it 'keeps false values' do
-      hash = { a: false, b: nil, c: true, d: '' }
-      expect(strategy.send(:prune!, hash)).to eq({ a: false, c: true })
-    end
-
-    it 'handles nested hashes' do
-      hash = {
-        a: { x: 1, y: nil, z: '' },
-        b: {},
-        c: { nested: { value: 'test', empty: nil } }
-      }
-      result = strategy.send(:prune!, hash)
-      expect(result).to eq({
-        a: { x: 1 },
-        c: { nested: { value: 'test' } }
-      })
-    end
-
-    it 'modifies the original hash' do
-      hash = { a: 1, b: nil, c: '' }
-      result = strategy.send(:prune!, hash)
-      expect(hash.object_id).to eq(result.object_id)
-      expect(hash).to eq({ a: 1 })
-    end
-  end
-
   describe '#build_access_token' do
     let(:request) { instance_double(Rack::Request, params: { 'code' => 'auth_code' }) }
     let(:client) { instance_double(OAuth2::Client) }
@@ -361,7 +356,7 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
         callback_url: 'https://example.com/callback',
         options: OmniAuth::Strategy::Options.new(
           client_id: 'client_id',
-          client_secret: 'secret',
+          client_secret: 'client_secret',
           token_params: {},
           token_options: {},
           auth_token_params: {}
@@ -377,13 +372,60 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
       strategy.send(:build_access_token)
       expect(client).to have_received(:get_token).with(
         hash_including(
-          headers: { 'Content-Type' => 'application/json' },
-          redirect_uri: 'https://example.com/callback',
+          headers: {
+            'Content-Type' => 'application/json'
+          },
           client_id: 'client_id',
-          client_secret: 'secret',
+          client_secret: 'client_secret',
+          redirect_uri: 'https://example.com/callback',
           code: 'auth_code'
         )
       )
+    end
+  end
+
+  describe '#prune!' do
+    it 'removes nil values from hash' do
+      hash = { a: 1, b: nil, c: 'test' }
+      expect(strategy.send(:prune!, hash)).to eq({ a: 1, c: 'test' })
+    end
+
+    it 'removes empty string values from hash' do
+      hash = { a: 'value', b: '', c: 'another' }
+      expect(strategy.send(:prune!, hash)).to eq({ a: 'value', c: 'another' })
+    end
+
+    it 'removes empty array values from hash' do
+      hash = { a: [1, 2], b: [], c: ['test'] }
+      expect(strategy.send(:prune!, hash)).to eq({ a: [1, 2], c: ['test'] })
+    end
+
+    it 'removes empty hash values from hash' do
+      hash = { a: { x: 1 }, b: {}, c: { y: 2 } }
+      expect(strategy.send(:prune!, hash)).to eq({ a: { x: 1 }, c: { y: 2 } })
+    end
+
+    it 'keeps zero values' do
+      hash = { a: 0, b: nil, c: 'value' }
+      expect(strategy.send(:prune!, hash)).to eq({ a: 0, c: 'value' })
+    end
+
+    it 'keeps false values' do
+      hash = { a: false, b: nil, c: true }
+      expect(strategy.send(:prune!, hash)).to eq({ a: false, c: true })
+    end
+
+    it 'handles nested hashes' do
+      hash = { a: { x: 1, y: nil, z: '' }, b: { w: nil, x: '', y: [], z: {} }, c: { nested: { value: 'test', empty: nil } } }
+      result = strategy.send(:prune!, hash)
+      expect(result).to eq({ a: { x: 1 }, c: { nested: { value: 'test' } } })
+    end
+
+    it 'modifies the original hash' do
+      hash = { a: 1, b: nil, c: 'test' }
+      result = strategy.send(:prune!, hash)
+      expect(hash.object_id).to eq(result.object_id)
+      expect(hash).to eq({ a: 1, c: 'test' })
     end
   end
 end

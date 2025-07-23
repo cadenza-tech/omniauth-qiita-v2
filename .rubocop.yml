@@ -4,7 +4,7 @@ plugins:
   - rubocop-rspec
 
 AllCops:
-  TargetRubyVersion: 2.3
+  TargetRubyVersion: 2.5
   NewCops: enable
 
 # https://docs.rubocop.org/rubocop/cops_gemspec.html#gemspecrequiredrubyversion
@@ -192,14 +192,14 @@ RSpec/ExampleLength:
 # https://docs.rubocop.org/rubocop-rspec/cops_rspec.html#rspecmultipleexpectations
 RSpec/MultipleExpectations:
   Enabled: true
-  Max: 3
+  Max: 5
 
 # https://docs.rubocop.org/rubocop-rspec/cops_rspec.html#rspecmultiplememoizedhelpers
 RSpec/MultipleMemoizedHelpers:
   Enabled: true
-  Max: 8
+  Max: 7
 
 # https://docs.rubocop.org/rubocop-rspec/cops_rspec.html#rspecnestedgroups
 RSpec/NestedGroups:
   Enabled: true
-  Max: 4
+  Max: 3
