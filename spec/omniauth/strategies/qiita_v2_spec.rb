@@ -278,8 +278,8 @@ RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFile
     let(:response) { instance_double(OAuth2::Response, parsed: { 'id' => 'qiita123' }) }
 
     before do
-      allow(strategy).to receive(:access_token).and_return(access_token)
       allow(access_token).to receive(:get).and_return(response)
+      allow(strategy).to receive(:access_token).and_return(access_token)
     end
 
     it 'fetches user info from API' do
