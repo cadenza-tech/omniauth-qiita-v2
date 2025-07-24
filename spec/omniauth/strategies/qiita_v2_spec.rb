@@ -1,17 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFilePathFormat
-  include Rack::Test::Methods
-
-  let(:app) do
-    Rack::Builder.new do
-      use OmniAuth::Test::PhonySession
-      use OmniAuth::Builder do
-        provider :qiita_v2, 'client_id', 'client_secret'
-      end
-      run ->(env) { [404, { 'Content-Type' => 'text/plain' }, [env.key?('omniauth.auth').to_s]] }
-    end.to_app
-  end
   let(:options) { {} }
   let(:strategy) { described_class.new('app', 'client_id', 'client_secret', options) }
 
