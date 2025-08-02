@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.0] - 2025-08-02
+
+- Refactor: Refactor `OmniAuth::Strategies::QiitaV2#authorize_params`
+- Test: Update test
+- Other: Update .rubocop.yml
+
 ## [1.4.0] - 2025-07-20
 
 - New: Update auth hash
