@@ -67,11 +67,11 @@ module OmniAuth
 
       def authorize_params
         super.tap do |params|
-          ['scope', 'state'].each do |v|
-            params[v.to_sym] = request.params[v] if request.params[v]
+          options[:authorize_options].each do |key|
+            params[key] = request.params[key.to_s] unless empty?(request.params[key.to_s])
           end
           params[:scope] ||= DEFAULT_SCOPE
-          session['omniauth.state'] = params[:state] if params[:state]
+          session['omniauth.state'] = params[:state] unless empty?(params[:state])
         end
       end
 
@@ -86,8 +86,12 @@ module OmniAuth
       def prune!(hash)
         hash.delete_if do |_, value|
           prune!(value) if value.is_a?(Hash)
-          value.nil? || (value.respond_to?(:empty?) && value.empty?)
+          empty?(value)
         end
+      end
+
+      def empty?(value)
+        value.nil? || (value.respond_to?(:empty?) && value.empty?)
       end
 
       def base_params
