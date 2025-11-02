@@ -9,17 +9,13 @@ module OmniAuth
       USER_INFO_URL = '/api/v2/authenticated_user'
 
       option :name, 'qiita_v2'
-
       option :client_options, {
         site: 'https://qiita.com',
         authorize_url: '/api/v2/oauth/authorize',
         token_url: '/api/v2/access_tokens'
       }
-
       option :token_params, { parse: :json }
-
       option :authorize_options, [:scope, :state]
-
       option :scope, DEFAULT_SCOPE
 
       uid { raw_info['id'] }
