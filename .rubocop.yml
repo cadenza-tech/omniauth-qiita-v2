@@ -35,7 +35,6 @@ Metrics/AbcSize:
 # https://docs.rubocop.org/rubocop/cops_metrics.html#metricsblocklength
 Metrics/BlockLength:
   Enabled: true
-  Max: 30
   Exclude:
     - 'omniauth-qiita-v2.gemspec'
     - 'spec/omniauth/strategies/qiita_v2_spec.rb'
@@ -46,22 +45,10 @@ Metrics/ClassLength:
   CountComments: false
   Max: 200
 
-# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsmethodlength
-Metrics/MethodLength:
-  Enabled: true
-  CountComments: false
-  Max: 25
-
 # https://docs.rubocop.org/rubocop/cops_metrics.html#metricsmodulelength
 Metrics/ModuleLength:
   Enabled: true
   Max: 200
-
-# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsparameterlists
-Metrics/ParameterLists:
-  Enabled: true
-  Max: 5
-  CountKeywordArgs: true
 
 # https://docs.rubocop.org/rubocop/cops_naming.html#namingaccessormethodname
 Naming/AccessorMethodName:
@@ -187,7 +174,7 @@ Style/WordArray:
 # https://docs.rubocop.org/rubocop-rspec/cops_rspec.html#rspecexamplelength
 RSpec/ExampleLength:
   Enabled: true
-  Max: 50
+  Max: 25
 
 # https://docs.rubocop.org/rubocop-rspec/cops_rspec.html#rspecmultipleexpectations
 RSpec/MultipleExpectations:
@@ -197,9 +184,4 @@ RSpec/MultipleExpectations:
 # https://docs.rubocop.org/rubocop-rspec/cops_rspec.html#rspecmultiplememoizedhelpers
 RSpec/MultipleMemoizedHelpers:
   Enabled: true
-  Max: 7
-
-# https://docs.rubocop.org/rubocop-rspec/cops_rspec.html#rspecnestedgroups
-RSpec/NestedGroups:
-  Enabled: true
-  Max: 3
+  Max: 6
