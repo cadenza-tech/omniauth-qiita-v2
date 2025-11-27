@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0] - 2025-11-28
+
+- Rename strategy from `QiitaV2` to `Qiita`
+
 ## [1.5.0] - 2025-08-02
 
 - Refactor: Refactor `OmniAuth::Strategies::QiitaV2#authorize_params`
