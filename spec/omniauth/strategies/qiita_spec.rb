@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-RSpec.describe OmniAuth::Strategies::QiitaV2 do # rubocop:disable RSpec/SpecFilePathFormat
+RSpec.describe OmniAuth::Strategies::Qiita do # rubocop:disable RSpec/SpecFilePathFormat
   let(:options) { {} }
   let(:strategy) { described_class.new('app', 'client_id', 'client_secret', options) }
 
   describe 'default options' do
     it 'has correct default values' do
-      expect(strategy.options.name).to eq('qiita_v2')
+      expect(strategy.options.name).to eq('qiita')
       expect(strategy.options.scope).to eq('read_qiita')
       expect(strategy.options.client_options.site).to eq('https://qiita.com')
       expect(strategy.options.client_options.authorize_url).to eq('/api/v2/oauth/authorize')
