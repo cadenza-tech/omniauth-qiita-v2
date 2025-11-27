@@ -37,7 +37,7 @@ Metrics/BlockLength:
   Enabled: true
   Exclude:
     - 'omniauth-qiita-v2.gemspec'
-    - 'spec/omniauth/strategies/qiita_v2_spec.rb'
+    - 'spec/omniauth/strategies/qiita_spec.rb'
 
 # https://docs.rubocop.org/rubocop/cops_metrics.html#metricsclasslength
 Metrics/ClassLength:

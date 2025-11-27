@@ -38,7 +38,7 @@ Add the following to `config/initializers/devise.rb`:
 ```ruby
 # config/initializers/devise.rb
 Devise.setup do |config|
-  config.omniauth :qiita_v2, ENV['QIITA_CLIENT_ID'], ENV['QIITA_CLIENT_SECRET']
+  config.omniauth :qiita, ENV['QIITA_CLIENT_ID'], ENV['QIITA_CLIENT_SECRET']
 end
 ```
 
@@ -57,7 +57,7 @@ Add the OmniAuth configuration to your Devise model:
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :omniauthable, omniauth_providers: [:qiita_v2]
+         :omniauthable, omniauth_providers: [:qiita]
 end
 ```
 
@@ -68,10 +68,10 @@ You can configure several options:
 ```ruby
 # config/initializers/devise.rb
 Devise.setup do |config|
-  config.omniauth :qiita_v2, ENV['QIITA_CLIENT_ID'], ENV['QIITA_CLIENT_SECRET'],
+  config.omniauth :qiita, ENV['QIITA_CLIENT_ID'], ENV['QIITA_CLIENT_SECRET'],
     {
       scope: 'read_qiita write_qiita', # Specify OAuth scopes
-      callback_path: '/custom/qiita_v2/callback' # Custom callback path
+      callback_path: '/custom/qiita/callback' # Custom callback path
     }
 end
 ```
@@ -87,7 +87,7 @@ After successful authentication, the auth hash will be available in `request.env
 
 ```ruby
 {
-  provider: 'qiita_v2',
+  provider: 'qiita',
   uid: 'qiita',
   info: {
     name: 'Qiita キータ',

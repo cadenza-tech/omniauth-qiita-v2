@@ -4,11 +4,11 @@ require 'omniauth-oauth2'
 
 module OmniAuth
   module Strategies
-    class QiitaV2 < OmniAuth::Strategies::OAuth2
+    class Qiita < OmniAuth::Strategies::OAuth2
       DEFAULT_SCOPE = 'read_qiita'
       USER_INFO_URL = '/api/v2/authenticated_user'
 
-      option :name, 'qiita_v2'
+      option :name, 'qiita'
       option :client_options, {
         site: 'https://qiita.com',
         authorize_url: '/api/v2/oauth/authorize',
