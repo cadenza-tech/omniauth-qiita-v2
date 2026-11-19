@@ -301,7 +301,7 @@ RSpec.describe OmniAuth::Strategies::Qiita do # rubocop:disable RSpec/SpecFilePa
   describe '#authorize_params' do
     let(:request) { instance_double(Rack::Request, params: {}) }
 
-    before { allow(strategy).to receive_messages(request: request, session: {}) }
+    before { allow(strategy).to receive_messages(request: request, session: {}, full_host: 'https://example.com') }
 
     it 'includes default scope when not specified' do
       params = strategy.authorize_params
@@ -320,10 +320,18 @@ RSpec.describe OmniAuth::Strategies::Qiita do # rubocop:disable RSpec/SpecFilePa
     context 'with state in request params' do
       let(:request) { instance_double(Rack::Request, params: { 'state' => 'random-state' }) }
 
-      it 'includes state in params and stores in session' do
+      it 'includes state in params' do
         params = strategy.authorize_params
         expect(params[:state]).to eq('random-state')
-        expect(strategy.session['omniauth.state']).to eq('random-state')
+      end
+    end
+
+    context 'with empty state in request params' do
+      let(:request) { instance_double(Rack::Request, params: { 'state' => '' }) }
+
+      it 'generates state' do
+        params = strategy.authorize_params
+        expect(params[:state]).to match(/\A\h{48}\z/)
       end
     end
   end
@@ -457,6 +465,54 @@ RSpec.describe OmniAuth::Strategies::Qiita do # rubocop:disable RSpec/SpecFilePa
 
     it 'returns false for objects that do not respond to empty?' do
       expect(strategy.send(:empty?, 123)).to be(false)
+    end
+  end
+
+  describe 'sign-in flow' do
+    let(:callback_env) { {} }
+    let(:app) do
+      session = {}
+      captured_env = callback_env
+      Rack::Builder.new do
+        use(Rack::Config) { |env| env['rack.session'] = session }
+        use OmniAuth::Builder do
+          provider :qiita, 'client_id', 'client_secret'
+        end
+        run ->(env) { [200, {}, []].tap { captured_env.update(env) } }
+      end
+    end
+
+    before do
+      allow(OmniAuth.config).to receive_messages(logger: Logger.new(IO::NULL), request_validation_phase: nil)
+      stub_request(:post, 'https://qiita.com/api/v2/access_tokens')
+        .to_return(status: 201, headers: { 'Content-Type' => 'application/json' }, body: { token: 'token' }.to_json)
+      stub_request(:get, 'https://qiita.com/api/v2/authenticated_user')
+        .to_return(headers: { 'Content-Type' => 'application/json' }, body: { id: 'qiita123' }.to_json)
+    end
+
+    def sign_in(request_params)
+      mock_request = Rack::MockRequest.new(app)
+      response = mock_request.post('/auth/qiita', params: request_params)
+      state = Rack::Utils.parse_query(URI(response['location']).query)['state']
+      mock_request.get('/auth/qiita/callback', params: { code: 'code', state: state })
+      state
+    end
+
+    it 'completes with a generated state' do
+      sign_in('origin' => '/back')
+
+      expect(callback_env['omniauth.auth'].uid).to eq('qiita123')
+      expect(callback_env['omniauth.origin']).to eq('/back')
+    end
+
+    context 'with state in request params' do
+      it 'completes with the given state' do
+        state = sign_in('origin' => '/back', 'state' => 'custom-state')
+
+        expect(state).to eq('custom-state')
+        expect(callback_env['omniauth.auth'].uid).to eq('qiita123')
+        expect(callback_env['omniauth.origin']).to eq('/back')
+      end
     end
   end
 end

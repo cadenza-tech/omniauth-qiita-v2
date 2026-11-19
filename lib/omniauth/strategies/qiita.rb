@@ -63,21 +63,30 @@ module OmniAuth
 
       def authorize_params
         super.tap do |params|
-          options[:authorize_options].each do |key|
-            params[key] = request.params[key.to_s] unless empty?(request.params[key.to_s])
-          end
           params[:scope] ||= DEFAULT_SCOPE
-          session['omniauth.state'] = params[:state] unless empty?(params[:state])
         end
       end
 
       protected
+
+      def options_for(option)
+        return super unless option.to_s == 'authorize'
+
+        super.merge(request_authorize_params)
+      end
 
       def build_access_token
         client.get_token(base_params.merge(token_params.to_hash(symbolize_keys: true)).merge(deep_symbolize(options.auth_token_params)))
       end
 
       private
+
+      def request_authorize_params
+        options[:authorize_options].each_with_object({}) do |key, params|
+          value = request.params[key.to_s]
+          params[key.to_sym] = value unless empty?(value)
+        end
+      end
 
       def prune!(hash)
         hash.delete_if do |_, value|
